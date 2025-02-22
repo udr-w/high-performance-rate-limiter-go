@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/udr-w/high-performance-rate-limiter-go/internal/limiter"
+	"github.com/udr-w/high-performance-rate-limiter-go/limiter"
 )
 
 func TestTokenBucket(t *testing.T) {
