@@ -30,6 +30,11 @@ docker ps --filter "name=redis"
 docker start redis
 ```
 
+## Run Tests
+```sh
+go test ./...
+```
+
 ## Usage Example
 ```go
 package main
