@@ -18,6 +18,18 @@ go mod init github.com/yourusername/high-performance-rate-limiter-go
 go mod tidy
 ```
 
+## Run Redis locally
+```sh
+#Pull & run
+docker run --name redis -p 6379:6379 -d redis
+
+#Check running containers
+docker ps | grep redis
+
+#If Redis is not running, start it with:
+docker start redis
+```
+
 ## Usage Example
 ```go
 package main
