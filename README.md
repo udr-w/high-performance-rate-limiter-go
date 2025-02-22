@@ -57,14 +57,22 @@ func main() {
 ```
 
 ## Benchmarks
-goos: linux
-goarch: amd64
-pkg: github.com/udr-w/high-performance-rate-limiter-go/tests
-cpu: 11th Gen Intel(R) Core(TM) i7-1165G7 @ 2.80GHz
-### Token Bucket Limiter
-BenchmarkTokenBucket-8          67066435                47.58 ns/op
-### Redis Bucket Limiter
-BenchmarkRedisLimiter-8           130024             25220 ns/op
+
+**System Configuration**  
+- **OS:** Linux  
+- **Architecture:** AMD64  
+- **Package:** `github.com/udr-w/high-performance-rate-limiter-go/tests`  
+- **CPU:** 11th Gen Intel® Core™ i7-1165G7 @ 2.80GHz  
+
+### Token Bucket Limiter  
+- **Benchmark:** `BenchmarkTokenBucket-8`  
+- **Operations:** `67,066,435`  
+- **Time per Operation:** `47.58 ns/op`  
+
+### Redis Bucket Limiter  
+- **Benchmark:** `BenchmarkRedisLimiter-8`  
+- **Operations:** `130,024`  
+- **Time per Operation:** `25,220 ns/op`  
 
 ## License
 MIT License. See `LICENSE` file for details.
