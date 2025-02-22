@@ -133,3 +133,13 @@ func TestTokenBucketWithChannels(t *testing.T) {
 		t.Errorf("More requests allowed than max capacity")
 	}
 }
+
+func BenchmarkTokenBucket(b *testing.B) {
+	tb := limiter.NewTokenBucket(100, 200) // 100 tokens per second, max 200 tokens
+
+	b.ResetTimer() // Ignore setup time
+
+	for i := 0; i < b.N; i++ {
+		tb.Allow()
+	}
+}

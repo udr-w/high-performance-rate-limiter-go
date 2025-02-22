@@ -112,3 +112,19 @@ func TestRedisLimiterMultiInstance(t *testing.T) {
 		t.Errorf("Request after reset should have been allowed on instance 1")
 	}
 }
+
+func BenchmarkRedisLimiter(b *testing.B) {
+	client := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+	})
+	defer client.Close()
+
+	client.FlushDB(ctx)
+	rl := limiter.NewRedisLimiter(client, "benchmark_test", 100, time.Second)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		rl.Allow()
+	}
+}
