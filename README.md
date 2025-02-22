@@ -18,15 +18,15 @@ go mod init github.com/yourusername/high-performance-rate-limiter-go
 go mod tidy
 ```
 
-## Run Redis locally
+## Run Redis Locally
 ```sh
-#Pull & run
+# Pull & run Redis container
 docker run --name redis -p 6379:6379 -d redis
 
-#Check running containers
-docker ps | grep redis
+# Check running Redis containers
+docker ps --filter "name=redis"
 
-#If Redis is not running, start it with:
+# If Redis is not running, start it
 docker start redis
 ```
 
