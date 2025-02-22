@@ -40,7 +40,7 @@ func main() {
 ```
 
 ## Benchmarks
-(TBD: Run benchmarks and add results here)
+(TBD)
 
 ## License
 MIT License. See `LICENSE` file for details.
