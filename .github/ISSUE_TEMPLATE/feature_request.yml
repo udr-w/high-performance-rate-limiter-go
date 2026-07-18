@@ -1,0 +1,56 @@
+name: Feature Request
+description: Propose a new limiter capability, API, algorithm, or integration.
+title: "feat: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What production use case or limitation should this solve?
+      placeholder: "I need sliding-window semantics because fixed-window boundary bursts are unacceptable for..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: Describe the API, behavior, or implementation approach.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - TokenBucket
+        - LeakyBucket
+        - RedisLimiter
+        - New algorithm
+        - Observability
+        - Testing or benchmarks
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: semantics
+    attributes:
+      label: Semantics and Tradeoffs
+      description: Explain rate-limit behavior, burst handling, Redis consistency, compatibility, and failure policy.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Compatibility Impact
+      description: Does this change public APIs, behavior, dependencies, or performance characteristics?
+    validations:
+      required: true

@@ -1,0 +1,36 @@
+name: Documentation
+description: Report missing, unclear, or inaccurate documentation.
+title: "docs: "
+labels: ["documentation", "needs-triage"]
+body:
+  - type: textarea
+    id: location
+    attributes:
+      label: Location
+      description: Link or name the file, section, API, or example.
+      placeholder: "README.md Redis Distributed Limiter section"
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: Issue
+      description: What is missing, inaccurate, or confusing?
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested
+    attributes:
+      label: Suggested Change
+      description: Include proposed wording when possible.
+
+  - type: checkboxes
+    id: checked
+    attributes:
+      label: Checklist
+      options:
+        - label: I checked the current README.
+        - label: I checked CONTRIBUTING.md.
+        - label: I checked SECURITY.md if this relates to vulnerability reporting.
