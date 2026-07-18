@@ -86,6 +86,8 @@ Benchmark numbers are environment-specific. When changing benchmark claims or pu
 
 Avoid benchmark claims that measure only an already-denied path unless that is the explicit scenario.
 
+The scheduled and manually triggered benchmark workflow records five samples with runner, toolchain, CPU, Redis, commit, and command metadata. Use its raw workflow artefact when reviewing changes over time, and compare runs only when the recorded environments are materially equivalent.
+
 ## Documentation
 
 Update `README.md` when changing public APIs, behavior, setup, Redis semantics, or benchmark guidance.

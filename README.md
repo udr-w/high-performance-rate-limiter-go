@@ -157,6 +157,8 @@ Summary from the 2026-07-18 run on `linux/amd64`, Go `1.26.5`, Intel i7-1165G7, 
 
 Redis benchmarks require Redis at `localhost:6379`. Treat benchmark numbers as environment-specific; publish results only with hardware, Go version, Redis version, command details, and repeated samples.
 
+The [benchmark workflow](.github/workflows/benchmarks.yml) also runs weekly and on demand. Each run publishes the fixed five-sample command and environment metadata in the job summary and retains the raw output as a workflow artefact for 90 days.
+
 ## License
 
 MIT License. See [LICENSE](LICENSE).

@@ -1,0 +1,105 @@
+name: Benchmarks
+
+on:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmarks-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  benchmark:
+    name: Go and Redis benchmark samples
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    services:
+      redis:
+        image: redis:7.4.9
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Record environment metadata
+        env:
+          REDIS_CONTAINER_ID: ${{ job.services.redis.id }}
+        run: |
+          mkdir -p benchmark-artifacts
+          {
+            echo "collected_at_utc: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo "repository: ${GITHUB_REPOSITORY}"
+            echo "commit: ${GITHUB_SHA}"
+            echo "ref: ${GITHUB_REF}"
+            echo "run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo "runner: ${RUNNER_OS}/${RUNNER_ARCH}"
+            echo "runner_image: ${ImageOS:-unknown} ${ImageVersion:-unknown}"
+            echo "kernel: $(uname -srvm)"
+            echo "go: $(go version)"
+            echo "go_environment: $(go env GOOS GOARCH GOAMD64 | paste -sd '/')"
+            echo "logical_cpus: $(nproc)"
+            lscpu | sed -n -E '/^(Architecture|CPU\(s\)|Model name|Thread\(s\) per core|Core\(s\) per socket|Socket\(s\)):/p'
+            echo "redis_image: redis:7.4.9"
+            echo "redis: $(docker exec "${REDIS_CONTAINER_ID}" redis-server --version)"
+            echo "command: go test -run '^$' -bench='Benchmark(TokenBucket|LeakyBucket|RedisLimiter)' -benchmem -benchtime=3s -count=5 ./tests"
+          } | tee benchmark-artifacts/metadata.txt
+
+      - name: Run reproducible benchmark samples
+        run: |
+          go test \
+            -run '^$' \
+            -bench='Benchmark(TokenBucket|LeakyBucket|RedisLimiter)' \
+            -benchmem \
+            -benchtime=3s \
+            -count=5 \
+            ./tests | tee benchmark-artifacts/results.txt
+
+      - name: Publish job summary
+        if: always()
+        run: |
+          {
+            echo "## Rate limiter benchmark samples"
+            echo
+            echo "Results are environment-specific. Compare runs only after checking the captured metadata."
+            echo
+            echo "### Environment"
+            echo '```text'
+            cat benchmark-artifacts/metadata.txt
+            echo '```'
+            echo
+            echo "### Raw samples"
+            echo '```text'
+            if test -f benchmark-artifacts/results.txt; then
+              cat benchmark-artifacts/results.txt
+            else
+              echo "No benchmark output was produced."
+            fi
+            echo '```'
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Upload raw benchmark artefact
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: rate-limiter-benchmarks-${{ github.run_id }}-${{ github.run_attempt }}
+          path: benchmark-artifacts/
+          if-no-files-found: error
+          retention-days: 90
