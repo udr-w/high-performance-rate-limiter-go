@@ -215,7 +215,7 @@ func TestRedisLimiterAllowContextReturnsErrors(t *testing.T) {
 	}
 }
 
-func BenchmarkRedisLimiter(b *testing.B) {
+func BenchmarkRedisLimiterAllow(b *testing.B) {
 	client := redisClientOrSkip(b)
 	defer client.Close()
 
@@ -236,4 +236,65 @@ func BenchmarkRedisLimiter(b *testing.B) {
 			b.Fatal(err)
 		}
 	}
+}
+
+func BenchmarkRedisLimiterDeny(b *testing.B) {
+	client := redisClientOrSkip(b)
+	defer client.Close()
+
+	key := redisTestKey(b, "benchmark")
+	if err := client.Del(ctx, key).Err(); err != nil {
+		b.Fatalf("failed to clean Redis key %q: %v", key, err)
+	}
+	defer client.Del(ctx, key)
+
+	rl := limiter.NewRedisLimiter(client, key, 1, time.Minute)
+	allowed, err := rl.AllowContext(ctx)
+	if err != nil {
+		b.Fatal(err)
+	}
+	if !allowed {
+		b.Fatal("expected initial request to be allowed")
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		allowed, err := rl.AllowContext(ctx)
+		if err != nil {
+			b.Fatal(err)
+		}
+		if allowed {
+			b.Fatal("expected request to be denied")
+		}
+	}
+}
+
+func BenchmarkRedisLimiterParallel(b *testing.B) {
+	client := redisClientOrSkip(b)
+	defer client.Close()
+
+	key := redisTestKey(b, "benchmark")
+	if err := client.Del(ctx, key).Err(); err != nil {
+		b.Fatalf("failed to clean Redis key %q: %v", key, err)
+	}
+	defer client.Del(ctx, key)
+
+	rl := limiter.NewRedisLimiter(client, key, b.N+100, time.Minute)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			allowed, err := rl.AllowContext(ctx)
+			if err != nil {
+				b.Fatal(err)
+			}
+			if !allowed {
+				b.Fatal("expected request to be allowed")
+			}
+		}
+	})
 }

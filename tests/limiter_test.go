@@ -212,12 +212,114 @@ func TestLeakyBucketValidation(t *testing.T) {
 	}
 }
 
-func BenchmarkTokenBucket(b *testing.B) {
-	tb := limiter.NewTokenBucket(100, 200) // 100 tokens per second, max 200 tokens
+func BenchmarkTokenBucketAllow(b *testing.B) {
+	clock := &fakeClock{now: time.Unix(0, 0)}
+	tb, err := limiter.NewTokenBucketWithOptions(float64(b.N), b.N+1, limiter.WithClock(clock))
+	if err != nil {
+		b.Fatalf("NewTokenBucketWithOptions() error = %v", err)
+	}
 
-	b.ResetTimer() // Ignore setup time
+	b.ReportAllocs()
+	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		tb.Allow()
+		if !tb.Allow() {
+			b.Fatal("expected request to be allowed")
+		}
 	}
+}
+
+func BenchmarkTokenBucketDeny(b *testing.B) {
+	clock := &fakeClock{now: time.Unix(0, 0)}
+	tb, err := limiter.NewTokenBucketWithOptions(1, 1, limiter.WithClock(clock))
+	if err != nil {
+		b.Fatalf("NewTokenBucketWithOptions() error = %v", err)
+	}
+	if !tb.Allow() {
+		b.Fatal("expected initial request to be allowed")
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		if tb.Allow() {
+			b.Fatal("expected request to be denied")
+		}
+	}
+}
+
+func BenchmarkTokenBucketParallel(b *testing.B) {
+	clock := &fakeClock{now: time.Unix(0, 0)}
+	tb, err := limiter.NewTokenBucketWithOptions(float64(b.N), b.N+1, limiter.WithClock(clock))
+	if err != nil {
+		b.Fatalf("NewTokenBucketWithOptions() error = %v", err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			if !tb.Allow() {
+				b.Fatal("expected request to be allowed")
+			}
+		}
+	})
+}
+
+func BenchmarkLeakyBucketAllow(b *testing.B) {
+	clock := &fakeClock{now: time.Unix(0, 0)}
+	lb, err := limiter.NewLeakyBucketWithOptions(float64(b.N), b.N+1, limiter.WithClock(clock))
+	if err != nil {
+		b.Fatalf("NewLeakyBucketWithOptions() error = %v", err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		if !lb.Allow() {
+			b.Fatal("expected request to be allowed")
+		}
+	}
+}
+
+func BenchmarkLeakyBucketDeny(b *testing.B) {
+	clock := &fakeClock{now: time.Unix(0, 0)}
+	lb, err := limiter.NewLeakyBucketWithOptions(1, 1, limiter.WithClock(clock))
+	if err != nil {
+		b.Fatalf("NewLeakyBucketWithOptions() error = %v", err)
+	}
+	if !lb.Allow() {
+		b.Fatal("expected initial request to be allowed")
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		if lb.Allow() {
+			b.Fatal("expected request to be denied")
+		}
+	}
+}
+
+func BenchmarkLeakyBucketParallel(b *testing.B) {
+	clock := &fakeClock{now: time.Unix(0, 0)}
+	lb, err := limiter.NewLeakyBucketWithOptions(float64(b.N), b.N+1, limiter.WithClock(clock))
+	if err != nil {
+		b.Fatalf("NewLeakyBucketWithOptions() error = %v", err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			if !lb.Allow() {
+				b.Fatal("expected request to be allowed")
+			}
+		}
+	})
 }

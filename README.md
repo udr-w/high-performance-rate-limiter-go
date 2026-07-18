@@ -142,7 +142,20 @@ docker run --name rate-limiter-redis -p 6379:6379 -d redis:7
 go test -bench=. -benchmem ./...
 ```
 
-Redis benchmarks require Redis at `localhost:6379`. Treat benchmark numbers as environment-specific; publish results only with hardware, Go version, Redis version, and command details.
+Latest benchmark report: [docs/benchmarks.md](docs/benchmarks.md).
+
+Summary from the 2026-07-18 run on `linux/amd64`, Go `1.26.5`, Intel i7-1165G7, Redis `7.4.9` in local Docker:
+
+| Scenario | Median | Allocations |
+| --- | ---: | ---: |
+| TokenBucket allow | 20.55 ns/op | 0 B/op, 0 allocs/op |
+| TokenBucket parallel allow | 81.82 ns/op | 0 B/op, 0 allocs/op |
+| LeakyBucket allow | 22.49 ns/op | 0 B/op, 0 allocs/op |
+| LeakyBucket parallel allow | 81.65 ns/op | 0 B/op, 0 allocs/op |
+| RedisLimiter allow | 65.66 us/op | 311 B/op, 9 allocs/op |
+| RedisLimiter parallel allow | 54.06 us/op | 313 B/op, 10 allocs/op |
+
+Redis benchmarks require Redis at `localhost:6379`. Treat benchmark numbers as environment-specific; publish results only with hardware, Go version, Redis version, command details, and repeated samples.
 
 ## License
 
